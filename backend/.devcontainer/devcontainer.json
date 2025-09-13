@@ -1,0 +1,14 @@
+{
+  "name": "Laravel Dev Container",
+  "dockerComposeFile": [
+    "../docker-compose.yml"
+  ],
+  "service": "laravel-app",
+  "workspaceFolder": "/var/www/html",
+  "extensions": [
+    "onecentlin.laravel-blade",
+    "mikestead.dotenv",
+    "bmewburn.vscode-intelephense-client"
+  ],
+  "shutdownAction": "stopCompose"
+}

@@ -1,0 +1,8 @@
+.bgimgPopularToday {
+    color: white;
+    background-color: black;
+    background-image: url("/icons/footer/footerdiv.svg");
+    background-size: cover; /* تصویر به اندازه داخل div تنظیم می‌شود */
+    background-position: center; /* تصویر در مرکز div قرار می‌گیرد */
+    background-repeat: no-repeat; /* جلوگیری از تکرار تصویر */
+  }

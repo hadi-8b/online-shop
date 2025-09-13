@@ -1,0 +1,22 @@
+.DiscountCard {
+  position: relative;
+  top: -7rem;
+  left: 0;
+  right: 0;
+
+
+}
+
+.DiscountCardbg {
+  padding-left: 60px;
+  align-content: center;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-image: url("/images/photo.png");
+  background-color: rgba(0, 0, 0, 0.4); /* رنگ طوسی نیمه شفاف */
+  background-blend-mode: multiply; /* ترکیب رنگ طوسی با تصویر */
+}
+
+
+

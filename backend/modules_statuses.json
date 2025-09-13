@@ -1,0 +1,16 @@
+{
+    "User": true,
+    "Product": true,
+    "Order": true,
+    "Discount": true,
+    "Review": true,
+    "Address": true,
+    "Category": true,
+    "Comment": true,
+    "Cart": true,
+    "Payment": true,
+    "Admin": true,
+    "Auth": true,
+    "Role": true,
+    "Permission": true
+}

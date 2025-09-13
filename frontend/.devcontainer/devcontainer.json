@@ -1,0 +1,13 @@
+{
+  "name": "Next.js Dev Container",
+  "dockerComposeFile": [
+    "../docker-compose.yml"
+  ],
+  "service": "nextjs-app",
+  "workspaceFolder": "/app",
+  "extensions": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ],
+  "shutdownAction": "stopCompose"
+}

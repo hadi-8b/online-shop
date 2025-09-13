@@ -1,0 +1,15 @@
+.header {
+  padding-top: 2em;
+  background-color: white;
+}
+@media (max-width: 1024px) {
+  .navStyle {
+    justify-content: left;
+  }
+}
+@media (min-width: 1024px) {
+    .header {
+      padding-left: 5em;
+      padding-right: 5em;
+    }
+}
