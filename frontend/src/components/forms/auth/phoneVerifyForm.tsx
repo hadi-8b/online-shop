@@ -1,64 +1,53 @@
-// src/components/forms/auth/phoneVerifyForm.tsx
 import { withFormik } from "formik";
 import * as yup from "yup";
 import InnerPhoneVerify from "@/components/auth/innerPhoneVerifyForm";
 import { PhoneVerifyFormValuesInterface } from "@/contracts/auth";
 import { apiClient } from "@/services/api/client";
-import useAuth from "@/hooks/useAuth";
 
-const phoneVerifyFormValidationSchema = yup.object().shape({
-    code: yup.string().required("کد تایید الزامی است")
-        .matches(/^[0-9]+$/, "فقط عدد مجاز است")
-        .length(6, "کد تایید باید 6 رقم باشد"),
+const schema = yup.object().shape({
+  code: yup.string().required("کد تایید الزامی است").matches(/^[0-9]+$/, "فقط عدد مجاز است").length(6, "کد تایید باید 6 رقم باشد"),
 });
 
 interface PhoneVerifyFormProps {
-    phone?: string;
-    clearPhone: () => void;
-    router: any;
+  phone?: string;
+  clearPhone: () => void;
+  router: any;
 }
 
-const PhoneVerifyFormWithContext = (props: PhoneVerifyFormProps) => {
-    const { mutate } = useAuth();
-    return <PhoneVerifyFormBase {...props} userMutate={mutate} />;
-};
-
-const PhoneVerifyFormBase = withFormik<
-    PhoneVerifyFormProps & { userMutate: any },
-    PhoneVerifyFormValuesInterface
+const PhoneVerifyForm = withFormik<
+  PhoneVerifyFormProps,
+  PhoneVerifyFormValuesInterface
 >({
-    mapPropsToValues: (props) => ({
-        code: "",
-        phone: props.phone || "",
-    }),
-    validationSchema: phoneVerifyFormValidationSchema,
+  mapPropsToValues: (props) => ({
+    code: "",
+    phone: props.phone || "",
+  }),
+  validationSchema: schema,
 
-    handleSubmit: async (values, { props, setFieldError, setSubmitting }) => {
-        setSubmitting(true);
-        try {
-            // // گرفتن csrf cookie
-            // await apiClient.get("/sanctum/csrf-cookie", false);
+  handleSubmit: async (values, { props, setFieldError, setSubmitting }) => {
+    setSubmitting(true);
+    try {
+      const response = await apiClient.post("auth/verify", {
+        code: values.code,
+        phone: values.phone,
+      }, false);
 
-            // ارسال verify
-            const response = await apiClient.post("auth/verify", {
-                code: values.code,
-                phone: values.phone,
-            }, false);
+      if (!response.success) {
+        setFieldError("code", response.message || "کد تایید نامعتبر است");
+        setSubmitting(false);
+        return;
+      }
 
-            if (response.success) {
-                props.clearPhone();
-                // پروفایل رو به‌روز کنه
-                await props.userMutate();
-                props.router.replace("/panel");
-            } else {
-                setFieldError("code", response.message || "کد تایید نامعتبر است");
-            }
-        } catch (error) {
-            setFieldError("code", "خطا در ارتباط با سرور");
-        } finally {
-            setSubmitting(false);
-        }
-    },
+      props.clearPhone();
+      // هیچ فراخوانی دیگری نکن؛ اجازه بده مرورگر کوکی را ست کند
+      props.router.replace("/panel");
+
+    } catch {
+      setFieldError("code", "خطا در ارتباط با سرور");
+    } finally {
+      setSubmitting(false);
+    }
+  },
 })(InnerPhoneVerify);
 
-export default PhoneVerifyFormWithContext;
+export default PhoneVerifyForm;

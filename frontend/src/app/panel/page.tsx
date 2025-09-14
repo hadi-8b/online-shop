@@ -1,13 +1,11 @@
 // src/app/panel/page.tsx
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import useAuth from '@/hooks/useAuth';
 import { apiClient } from '@/services/api/client';
 
-// --- UI states ---
 const LoadingState = ({ onRetry }: { onRetry: () => void }) => (
   <div className="min-h-[60vh] flex flex-col items-center justify-center p-8">
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4" />
@@ -21,50 +19,27 @@ const LoadingState = ({ onRetry }: { onRetry: () => void }) => (
   </div>
 );
 
-const UnauthenticatedState = ({ onLogin }: { onLogin: () => void }) => (
-  <div className="min-h-[60vh] flex flex-col items-center justify-center p-8">
-    <p className="text-lg mb-4 text-gray-700">برای دسترسی به پنل کاربری، لطفاً وارد شوید</p>
-    <button
-      onClick={onLogin}
-      className="px-5 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
-    >
-      ورود به حساب کاربری
-    </button>
-  </div>
-);
-
-// --- Page ---
 export default function Panel() {
-  const { user, loading, mutate } = useAuth(); // فقط از سشن استفاده می‌کنیم
+  // اینجا فقط برای نمایش اطلاعات کاربر از useAuth استفاده می‌کنیم
+  const { user, loading, mutate } = useAuth();
   const router = useRouter();
-
-  // اگر لاگین نیست، بعد از اتمام لودینگ به صفحه ورود هدایت کن
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/auth/login');
-    }
-  }, [loading, user, router]);
 
   const handleLogout = async () => {
     try {
-      // بک‌اند: POST /api/logout با گارد web
-      await apiClient.post('logout', {}, true);
-      await mutate(null); // SWR cache رو خالی کن
+      await apiClient.post('logout', {}, true); // POST /api/logout (guard:web)
+      await mutate(null, { revalidate: false }); // کش SWR را خالی کن
       router.replace('/auth/login');
     } catch (e) {
       console.error('Logout error:', e);
     }
   };
 
-  if (loading) {
+  if (loading || !user) {
+    // RequireAuth در layout اجازه‌ی ورود مهمان را نمی‌دهد؛
+    // این حالت فقط برای revalidation اولیه است.
     return <LoadingState onRetry={() => mutate()} />;
   }
 
-  if (!user) {
-    return <UnauthenticatedState onLogin={() => router.replace('/auth/login')} />;
-  }
-
-  // --- Authenticated content ---
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -94,6 +69,7 @@ export default function Panel() {
           <h2 className="text-xl font-semibold text-gray-800 mb-4">
             خوش آمدید {user.first_name || user.phone} 👋
           </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
             <div>
               <div className="font-medium">نام:</div>
@@ -123,7 +99,6 @@ export default function Panel() {
           </div>
         </div>
 
-        {/* نمونه سکشن‌های بعدی ... */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <Link
             href="/panel/orders"
