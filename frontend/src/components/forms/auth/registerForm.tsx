@@ -45,7 +45,7 @@ const RegisterForm = withFormik<RegisterFormProps, RegisterFormValuesInterface>(
       
       console.log("Submitting registration form with values:", values);
       
-      const response = await apiClient.post('auth/register', values, false);
+      const response = await apiClient.post('/api/auth/register', values, false);
       
       console.log("Registration API response:", response);
       

@@ -74,7 +74,6 @@ return [
         // //     'driver' => 'database',
         // //     'table' => 'users',
         // // ],
-        'providers' => [
         'users' => [
             'driver' => 'eloquent',
             'model' => Modules\User\Models\User::class,
@@ -83,7 +82,6 @@ return [
             'driver' => 'eloquent',
             'model' => Modules\Admin\Models\Admin::class,
         ],
-    ],
     ],
 
     /*

@@ -1,178 +1,101 @@
 // src/services/api/client.ts
-
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  status: number;
+export interface ApiResponse<T = any> {
   data?: T;
   message?: string;
-  raw?: any; // پاسخ خام برای مواقع خاص
+  errors?: Record<string, string[]>;
+  success: boolean;
 }
 
-export interface RequestOptions {
-  method?: HttpMethod;
+export interface ApiRequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: any;
   headers?: Record<string, string>;
-  signal?: AbortSignal;
-  // برای ساخت راحت query string
-  query?: Record<string, string | number | boolean | null | undefined>;
-  // اگر دوست داری کش مرورگر/next رو کنترل کنی (اختیاری)
-  cache?: RequestCache;
-  next?: NextFetchRequestConfig; // برای استفاده در محیط Next (اختیاری)
 }
 
 class ApiClient {
-  private baseURL: string;
-
-  constructor() {
-    // آدرس API از ENV
-    const base = (process.env.NEXT_PUBLIC_API_URL || '').trim();
-    this.baseURL = base.replace(/\/+$/, ''); // حذف اسلش انتهایی
-
-    if (!this.baseURL && process.env.NODE_ENV === 'development') {
-      console.warn('⚠️  NEXT_PUBLIC_API_URL تعریف نشده است.');
-    }
-  }
-
-  // ساخت URL نهایی + QueryString
-  private buildUrl(endpoint: string, query?: RequestOptions['query']) {
-    const cleanEndpoint = endpoint.replace(/^\/+/, ''); // حذف اسلش ابتدایی
-    const url = `${this.baseURL}/${cleanEndpoint}`;
-
-    if (!query) return url;
-
-    const params = new URLSearchParams();
-    Object.entries(query).forEach(([k, v]) => {
-      if (v === null || v === undefined) return;
-      params.append(k, String(v));
-    });
-
-    const qs = params.toString();
-    return qs ? `${url}?${qs}` : url;
-  }
-
-  private isFormData(body: any) {
-    return typeof FormData !== 'undefined' && body instanceof FormData;
-  }
-
-  private isJsonLike(body: any) {
-    if (body === null || body === undefined) return false;
-    if (typeof body === 'string') return false; // فرض می‌کنیم خودت درست ست کردی
-    if (this.isFormData(body)) return false;
-    return typeof body === 'object';
-  }
-
-  private logDev(...args: any[]) {
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.log(...args);
-    }
-  }
-
-  async request<T = unknown>(endpoint: string, opts: RequestOptions = {}): Promise<ApiResponse<T>> {
-    const {
-      method = 'GET',
-      body,
-      headers,
-      signal,
-      query,
-      cache,
-      next,
-    } = opts;
-
-    const url = this.buildUrl(endpoint, query);
-
-    const isFD = this.isFormData(body);
-    const isJSON = this.isJsonLike(body);
-
-    // هدرها: Accept همیشه JSON، Content-Type فقط برای JSON
-    const reqHeaders: Record<string, string> = {
-      Accept: 'application/json',
-      ...(isJSON ? { 'Content-Type': 'application/json' } : {}),
-      ...(headers || {}),
-    };
-
-    const init: RequestInit & { next?: NextFetchRequestConfig } = {
-      method,
-      headers: reqHeaders,
-      credentials: 'include', // برای ارسال کوکی
-      signal,
-      cache,
-      next,
-    };
-
-    if (body && method !== 'GET') {
-      init.body = isFD ? body : (isJSON ? JSON.stringify(body) : body);
-    }
-
-    this.logDev('➡️ API Request:', { url, method, headers: reqHeaders, body: isFD ? '[FormData]' : body });
+  private async request<T = any>(
+    endpoint: string,
+    options: ApiRequestOptions = {}
+  ): Promise<ApiResponse<T>> {
+    const { method = 'GET', body, headers = {} } = options;
 
     try {
-      const res = await fetch(url, init);
+      const url = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 
-      const contentType = res.headers.get('content-type') || '';
-      const isJsonResponse = contentType.includes('application/json');
-
-      const parsed = isJsonResponse ? await res.json() : await res.text();
-
-      this.logDev('⬅️ API Response:', { status: res.status, body: parsed });
-
-      // استخراج message و data به‌صورت هوشمند
-      const payload = isJsonResponse ? parsed : { message: parsed };
-      const data = payload && typeof payload === 'object' && 'data' in payload ? payload.data : payload;
-      const message =
-        (payload && typeof payload === 'object' && ('message' in payload) ? payload.message : undefined) ||
-        (res.ok ? undefined : res.statusText);
-
-      return {
-        success: res.ok,
-        status: res.status,
-        data,
-        message,
-        raw: payload,
+      let requestHeaders: Record<string, string> = {
+        Accept: 'application/json',
+        ...headers,
       };
-    } catch (err: any) {
-      this.logDev('❌ API Error:', err);
+
+      const requestOptions: RequestInit = {
+        method,
+        headers: requestHeaders,
+        credentials: 'include', // کوکی HttpOnly
+      };
+
+      if (body && method !== 'GET') {
+        if (body instanceof FormData) {
+          // وقتی فایل یا فرم داری → مستقیم بفرست
+          requestOptions.body = body;
+          // ❌ Content-Type رو نذار، مرورگر خودش میذاره
+        } else {
+          // حالت معمول JSON
+          requestHeaders['Content-Type'] = 'application/json';
+          requestOptions.body = JSON.stringify(body);
+        }
+      }
+
+      const response = await fetch(url, requestOptions);
+
+      let responseData: any = {};
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        responseData = await response.json();
+      } else {
+        responseData = { message: await response.text() };
+      }
+
+      return { ...responseData, success: response.ok };
+    } catch (error: any) {
       return {
         success: false,
-        status: 0,
-        message: err?.message || 'خطا در ارتباط با سرور',
-        raw: err,
+        message: error?.message || 'خطای شبکه',
+        errors: { network: [error?.message || 'خطای شبکه'] },
       };
     }
   }
 
-  // شورت‌کات‌ها
-  get<T = unknown>(endpoint: string, options: Omit<RequestOptions, 'method' | 'body'> = {}) {
-    return this.request<T>(endpoint, { ...options, method: 'GET' });
+  get<T = any>(endpoint: string, headers?: Record<string, string>) {
+    return this.request<T>(endpoint, { method: 'GET', headers });
   }
-
-  post<T = unknown>(endpoint: string, body?: any, options: Omit<RequestOptions, 'method'> = {}) {
-    return this.request<T>(endpoint, { ...options, method: 'POST', body });
+  post<T = any>(endpoint: string, body?: any, headers?: Record<string, string>) {
+    return this.request<T>(endpoint, { method: 'POST', body, headers });
   }
-
-  put<T = unknown>(endpoint: string, body?: any, options: Omit<RequestOptions, 'method'> = {}) {
-    return this.request<T>(endpoint, { ...options, method: 'PUT', body });
+  put<T = any>(endpoint: string, body?: any, headers?: Record<string, string>) {
+    return this.request<T>(endpoint, { method: 'PUT', body, headers });
   }
-
-  patch<T = unknown>(endpoint: string, body?: any, options: Omit<RequestOptions, 'method'> = {}) {
-    return this.request<T>(endpoint, { ...options, method: 'PATCH', body });
+  delete<T = any>(endpoint: string, headers?: Record<string, string>) {
+    return this.request<T>(endpoint, { method: 'DELETE', headers });
   }
-
-  delete<T = unknown>(endpoint: string, options: Omit<RequestOptions, 'method' | 'body'> = {}) {
-    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
+  patch<T = any>(endpoint: string, body?: any, headers?: Record<string, string>) {
+    return this.request<T>(endpoint, { method: 'PATCH', body, headers });
   }
 }
 
-// ——— Singleton
 export const apiClient = new ApiClient();
 
-// ——— SWR fetcher (در صورت نیاز)
-export const swrFetcher = async <T = unknown>(endpoint: string) => {
-  const res = await apiClient.get<T>(endpoint);
-  if (!res.success) {
-    throw new Error(res.message || 'Request failed');
-  }
-  return res.data as T;
+// آماده برای استفاده
+export const authApi = {
+  register: (payload: any) => apiClient.post('/api/auth/register', payload),
+  login: (payload: any) => apiClient.post('/api/auth/login', payload),
+  verify: (payload: any) => apiClient.post('/api/auth/verify', payload),
+  logout: () => apiClient.post('/api/auth/logout'),
+  profile: () => apiClient.get('/api/auth/profile'),
+};
+
+export const cartApi = {
+  get: () => apiClient.get('/api/cart'),
+  add: (item: any) => apiClient.post('/api/cart', item),
+  update: (id: string, item: any) => apiClient.put(`/api/cart/${id}`, item),
+  remove: (id: string) => apiClient.delete(`/api/cart/${id}`),
 };
