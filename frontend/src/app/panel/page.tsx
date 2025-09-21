@@ -47,9 +47,8 @@ export default function Panel() {
 
   const handleLogout = async () => {
     try {
-      // بک‌اند: POST /api/logout با گارد web
-      await apiClient.post('logout', {}, true);
-      await mutate(null); // SWR cache رو خالی کن
+      await apiClient.post('/api/auth/logout', {}, true);
+      await mutate(() => null, false); // کش SWR خالی
       router.replace('/auth/login');
     } catch (e) {
       console.error('Logout error:', e);

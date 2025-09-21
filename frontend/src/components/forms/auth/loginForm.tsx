@@ -16,7 +16,7 @@ const loginFormValidationSchema = yup.object().shape({
 });
 
 interface LoginFormProps {
-  setVerifyToken: (token: string) => void;
+  // setVerifyToken: (token: string) => void;
   setPhone: (phone: string) => void;
   router: AppRouterInstance;
 }
@@ -31,10 +31,10 @@ const LoginForm = withFormik<LoginFormProps, LoginFormValuesInterface>({
     try {
       setSubmitting(true);
       // گام ۱: گرفتن csrf cookie
-      await apiClient.get("/sanctum/csrf-cookie", false);
+      await apiClient.get("/api/sanctum/csrf-cookie", false);
 
       // گام ۲: ارسال login
-      const response = await apiClient.post("auth/login", values, false);
+      const response = await apiClient.post("/api/auth/login", values, false);
 
       if (response.success) {
         props.setPhone(values.phone);

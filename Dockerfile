@@ -1,5 +1,7 @@
-FROM php:8.2-fpm
+# آخرین نسخه PHP 8.4 با FPM
+FROM php:8.4-fpm
 
+# نصب پیش‌نیازها و اکستنشن‌های PHP
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
@@ -15,17 +17,21 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath gd
+    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath gd \
+    && rm -rf /var/lib/apt/lists/*
 
+# نصب Composer از ایمیج رسمی
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
+
+# تنظیم دایرکتوری پروژه
 WORKDIR /var/www/html
 
 # کپی کردن فایل‌های پروژه لاراول
 COPY ./backend /var/www/html
 
-# نصب Composer dependencies
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-RUN composer install --no-interaction --optimize-autoloader
+# نصب پکیج‌های PHP (Production Mode)
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # تنظیم دسترسی‌ها
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache

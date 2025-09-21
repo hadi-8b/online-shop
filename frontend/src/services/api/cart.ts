@@ -13,7 +13,7 @@ export interface CartUpdateResponse extends CartResponse {
 }
 
 class CartService {
-  private readonly CART_ENDPOINT = 'v1/cart';
+  private readonly CART_ENDPOINT = '/api/cart';
   private readonly GUEST_ID_KEY = 'guest_id';
   private guestId: string | null = null;
 

@@ -17,10 +17,10 @@ interface ProfileFormProps {
 
 const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
   console.log('ProfileForm rendered with user:', user);
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
-  
+
   // اضافه کردن dispatch و mutate
   const dispatch = useAppDispatch();
   const { mutate } = useAuth();
@@ -58,61 +58,39 @@ const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
     }),
 
     onSubmit: async (values) => {
-      console.log('Form submitted with values:', values);
-      setIsSubmitting(true);
-      setMessage(null);
+  setIsSubmitting(true);
+  setMessage(null);
 
-      try {
-        // پاک کردن فیلدهای خالی
-        const cleanValues = Object.entries(values).reduce((acc, [key, value]) => {
-          if (value !== null && value !== undefined && value !== '') {
-            acc[key] = value;
-          }
-          return acc;
-        }, {} as any);
+  try {
+    let payload: any;
 
-        console.log('Clean values:', cleanValues);
-
-        const response = await apiClient.put("v1/profile", cleanValues, true);
-        console.log('Profile update response:', response);
-
-        if (response.success && response.data) {
-          // بروزرسانی Redux با داده‌های جدید
-          const updatedUser: UserType = {
-            ...user,
-            ...response.data
-          };
-          
-          console.log('Updating Redux with new user data:', updatedUser);
-          dispatch(updateUser(updatedUser));
-          
-          // بروزرسانی SWR cache
-          await mutate();
-          
-          setMessage({ type: 'success', text: 'اطلاعات پروفایل با موفقیت به‌روزرسانی شد' });
-          
-          // صدا زدن onSuccess بعد از delay
-          setTimeout(() => {
-            onSuccess();
-          }, 1500);
-        } else {
-          setMessage({ type: 'error', text: response.message || 'خطا در به‌روزرسانی پروفایل' });
+    if (values.profile_picture instanceof File) {
+      payload = new FormData();
+      Object.entries(values).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          payload.append(key, value as any);
         }
-      } catch (error: any) {
-        console.error("Profile update error:", error);
-        
-        let errorMessage = 'خطا در ارتباط با سرور';
-        if (error?.response?.data?.message) {
-          errorMessage = error.response.data.message;
-        } else if (error?.message) {
-          errorMessage = error.message;
-        }
-        
-        setMessage({ type: 'error', text: errorMessage });
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
+      });
+    } else {
+      payload = values; // JSON
+    }
+
+    const response = await apiClient.put("/api/auth/profile", payload, true);
+
+    if (response.success && response.data) {
+      setMessage({ type: "success", text: "اطلاعات پروفایل با موفقیت ذخیره شد" });
+      await mutate();
+      setTimeout(() => onSuccess(), 1500);
+    } else {
+      setMessage({ type: "error", text: response.message || "خطا در به‌روزرسانی پروفایل" });
+    }
+  } catch (error: any) {
+    setMessage({ type: "error", text: error.message || "خطا در ارتباط با سرور" });
+  } finally {
+    setIsSubmitting(false);
+  }
+}
+
   });
 
   console.log('Form values:', formik.values);
@@ -122,11 +100,10 @@ const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
     <div className="w-full">
       <form onSubmit={formik.handleSubmit} className="space-y-6">
         {message && (
-          <div className={`p-4 rounded-lg border ${
-            message.type === 'success' 
-              ? 'bg-green-50 text-green-700 border-green-200' 
+          <div className={`p-4 rounded-lg border ${message.type === 'success'
+              ? 'bg-green-50 text-green-700 border-green-200'
               : 'bg-red-50 text-red-700 border-red-200'
-          }`}>
+            }`}>
             <div className="flex items-center">
               {message.type === 'success' ? (
                 <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -155,11 +132,10 @@ const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
               value={formik.values.first_name}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                formik.touched.first_name && formik.errors.first_name
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${formik.touched.first_name && formik.errors.first_name
                   ? 'border-red-300 focus:ring-red-500'
                   : 'border-gray-300'
-              }`}
+                }`}
               placeholder="نام خود را وارد کنید"
             />
             {formik.touched.first_name && formik.errors.first_name && (
@@ -179,11 +155,10 @@ const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
               value={formik.values.last_name}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                formik.touched.last_name && formik.errors.last_name
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${formik.touched.last_name && formik.errors.last_name
                   ? 'border-red-300 focus:ring-red-500'
                   : 'border-gray-300'
-              }`}
+                }`}
               placeholder="نام خانوادگی خود را وارد کنید"
             />
             {formik.touched.last_name && formik.errors.last_name && (
@@ -204,11 +179,10 @@ const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
             value={formik.values.phone}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-              formik.touched.phone && formik.errors.phone
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${formik.touched.phone && formik.errors.phone
                 ? 'border-red-300 focus:ring-red-500'
                 : 'border-gray-300'
-            }`}
+              }`}
             placeholder="09123456789"
             dir="ltr"
           />
@@ -229,11 +203,10 @@ const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
             value={formik.values.email}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-              formik.touched.email && formik.errors.email
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${formik.touched.email && formik.errors.email
                 ? 'border-red-300 focus:ring-red-500'
                 : 'border-gray-300'
-            }`}
+              }`}
             placeholder="example@email.com"
             dir="ltr"
           />
@@ -254,11 +227,10 @@ const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             rows={3}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none ${
-              formik.touched.address && formik.errors.address
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none ${formik.touched.address && formik.errors.address
                 ? 'border-red-300 focus:ring-red-500'
                 : 'border-gray-300'
-            }`}
+              }`}
             placeholder="آدرس کامل خود را وارد کنید"
           />
           {formik.touched.address && formik.errors.address && (
@@ -278,11 +250,10 @@ const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
             value={formik.values.card_number}
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
-            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-              formik.touched.card_number && formik.errors.card_number
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${formik.touched.card_number && formik.errors.card_number
                 ? 'border-red-300 focus:ring-red-500'
                 : 'border-gray-300'
-            }`}
+              }`}
             placeholder="1234567890123456"
             maxLength={16}
             dir="ltr"
@@ -297,11 +268,10 @@ const ProfileForm = ({ user, onSuccess }: ProfileFormProps) => {
           <button
             type="submit"
             disabled={isSubmitting || !formik.isValid}
-            className={`w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 ${
-              isSubmitting || !formik.isValid
-                ? "opacity-50 cursor-not-allowed" 
+            className={`w-full px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 ${isSubmitting || !formik.isValid
+                ? "opacity-50 cursor-not-allowed"
                 : ""
-            }`}
+              }`}
           >
             {isSubmitting ? (
               <div className="flex items-center justify-center">

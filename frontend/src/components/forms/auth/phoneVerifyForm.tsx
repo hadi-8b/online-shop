@@ -36,11 +36,11 @@ const PhoneVerifyFormBase = withFormik<
     handleSubmit: async (values, { props, setFieldError, setSubmitting }) => {
         setSubmitting(true);
         try {
-            // // گرفتن csrf cookie
-            // await apiClient.get("/sanctum/csrf-cookie", false);
+            // گرفتن csrf cookie
+            await apiClient.get("/api/sanctum/csrf-cookie", false);
 
             // ارسال verify
-            const response = await apiClient.post("auth/verify", {
+            const response = await apiClient.post("/api/auth/verify", {
                 code: values.code,
                 phone: values.phone,
             }, false);
