@@ -8,7 +8,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 // use Modules\Auth\Database\Factories\AuthFactory;
 
-class auth extends Model
+class Auth extends Model
 {
     use HasFactory;
     use HasApiTokens;
