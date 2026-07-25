@@ -17,7 +17,7 @@ const FeatureCard = () => {
               استایل منحصربه‌فرد، راحتی بی‌نظیر! طراحی مدرن برای تجربه‌ای
               متفاوت.
             </p>
-            <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-6 rounded">
+            <button className="bg-yellow-500 hover:bg-yellow-600 text-black font-semibold py-2 px-6 rounded">
               مشاهده تمام محصولات
             </button>
           </div>

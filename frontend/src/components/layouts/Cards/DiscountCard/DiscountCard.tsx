@@ -13,15 +13,15 @@ const DiscountCard = () => {
         <div className="pl-8">
           <div className="flex items-center mb-7 mt-7">
             <Image
-              className="mr-5"
+              className="mr-5 ml-5"
               src={"/images/profile.png"}
               alt="profile"
-              width={40}
-              height={40}
+              width={50}
+              height={50}
             />
             <div>
-              <h4 className="font-bold text-gray-800">متین مرادی</h4>
-              <span className="text-sm text-gray-500">مدیر ارشد بازاریابی</span>
+              <p className="font-bold text-gray-800">متین مرادی</p>
+              <p className="text-sm text-gray-500">مدیر ارشد بازاریابی</p>
             </div>
           </div>
           <div className="w-full sm:w-10/12">

@@ -26,7 +26,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\Cors::class, // اضافه کردن CORS middleware
         ]);
-       
+
+        $middleware->alias([
+            'admin' => \Modules\Admin\Http\Middleware\AdminMiddleware::class,
+            'admin.rate_limiter' => \Modules\Admin\Http\Middleware\AdminRateLimiter::class,
+        ]);
+
         $middleware->redirectGuestsTo(function ($request) {
             // اگر درخواست JSON می‌خواهد یا مسیر API است، ریدایرکت نکن (برگرد null تا 401 بده)
             if ($request->expectsJson() || $request->is('api/*')) {

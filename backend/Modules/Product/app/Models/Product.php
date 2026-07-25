@@ -32,7 +32,7 @@ class Product extends Model
     }
 
     public static function newFactory()
-{
-    return \Modules\Product\Database\Factories\ProductFactory::new();
-}
+    {
+        return \Modules\Product\Database\Factories\ProductFactory::new();
+    }
 }

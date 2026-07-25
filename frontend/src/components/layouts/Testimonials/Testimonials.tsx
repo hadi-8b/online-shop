@@ -54,7 +54,7 @@ const Testimonials: React.FC = () => {
                 className="w-16 h-16 mx-auto rounded-full mb-4"
               />
               <p className="text-gray-700 mb-4">{customer.testimonial}</p>
-              <p className="font-semibold text-yellow-600">{customer.name}, {customer.location}</p>
+              <p className="font-bold text-black">{customer.name}, {customer.location}</p>
             </div>
           ))}
         </div>

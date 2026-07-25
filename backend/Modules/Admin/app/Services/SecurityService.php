@@ -7,26 +7,54 @@ use Illuminate\Support\Facades\Log;
 
 class SecurityService
 {
-    public function setSecureCookies(array $tokens): void
+    /**
+     * Set secure cookies for access and refresh tokens.
+     * $cookies is an associative array:
+     * [
+     *   'access_token' => ['value' => '...', 'minutes' => 15],
+     *   'refresh_token' => ['value' => '...', 'minutes' => 1440],
+     * ]
+     */
+    public function setSecureCookies(array $cookies): void
     {
-        $config = config('sanctum');
-        
-        Cookie::queue(
-            'admin_access_token',
-            $tokens['access_token'],
-            $config['expiration'],
-            '/',
-            null,
-            true,
-            true,
-            false,
-            'strict'
-        );
+        $domain = config('session.domain', null);
+        $sameSite = config('session.same_site', 'Strict');
+
+        if (isset($cookies['access_token'])) {
+            $cfg = $cookies['access_token'];
+            Cookie::queue(
+                'admin_access_token',
+                $cfg['value'],
+                $cfg['minutes'],
+                '/',
+                $domain,
+                true,   // secure
+                true,   // httpOnly
+                false,
+                $sameSite
+            );
+        }
+
+        if (isset($cookies['refresh_token'])) {
+            $cfg = $cookies['refresh_token'];
+            Cookie::queue(
+                'admin_refresh_token',
+                $cfg['value'],
+                $cfg['minutes'],
+                '/',
+                $domain,
+                true,
+                true,
+                false,
+                $sameSite
+            );
+        }
     }
 
     public function clearSecureCookies(): void
     {
         Cookie::queue(Cookie::forget('admin_access_token'));
+        Cookie::queue(Cookie::forget('admin_refresh_token'));
     }
 
     public function sanitizeInput(mixed $input): mixed

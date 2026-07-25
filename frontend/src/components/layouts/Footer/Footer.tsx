@@ -13,7 +13,7 @@ export default function Footer() {
         <div className="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 py-12">
           {/* ستون اول */}
           <div className="text-center lg:text-left">
-            <h4 className="text-lg font-bold mb-4">درباره ما</h4>
+            <p className="text-lg font-bold mb-4">درباره ما</p>
             <ul className="space-y-2">
               <li>
                 <a href="/about" className="hover:text-black">
@@ -35,7 +35,7 @@ export default function Footer() {
 
           {/* ستون دوم */}
           <div className="text-center lg:text-left">
-            <h4 className="text-lg font-bold mb-4">لینک‌های جالب</h4>
+            <p className="text-lg font-bold mb-4">لینک‌های جالب</p>
             <ul className="space-y-2">
               <li>
                 <a href="/gallery" className="hover:text-black">
@@ -57,7 +57,7 @@ export default function Footer() {
 
           {/* ستون سوم */}
           <div className="text-center lg:text-left">
-            <h4 className="text-lg font-bold mb-4">دستاوردها</h4>
+            <p className="text-lg font-bold mb-4">دستاوردها</p>
             <ul className="space-y-2">
               <li>
                 <a href="/awards" className="hover:text-black">
@@ -79,7 +79,7 @@ export default function Footer() {
 
           {/* ستون چهارم */}
           <div className="text-center lg:text-left">
-            <h4 className="text-lg font-bold mb-4">تماس با ما</h4>
+            <p className="text-lg font-bold mb-4">تماس با ما</p>
             <p className="text-sm mb-4">
               طراحی منحصر به فرد با جزئیات دقیق و بی‌نظیر، که تجربه‌ای متفاوت از
               راحتی و استایل را فراهم می‌آورد.

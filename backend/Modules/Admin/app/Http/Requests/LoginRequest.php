@@ -1,5 +1,4 @@
 <?php
-
 namespace Modules\Admin\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,13 +13,9 @@ class LoginRequest extends FormRequest
 
     public function rules(): array
     {
+        // Keep email login for now (can extend to phone later)
         return [
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                'exists:admins,email'
-            ],
+            'email' => ['required', 'email', 'max:255', 'exists:admins,email'],
             'password' => [
                 'required',
                 Password::min(8)

@@ -32,6 +32,7 @@ export default function Header() {
               href="#"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="social Link"
             >
               <Image
                 src="/icons/social-icons/facebook-icon.svg"
@@ -45,6 +46,7 @@ export default function Header() {
               href="#"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="social Link"
             >
               <Image
                 src="/icons/social-icons/instagram-icon.svg"
@@ -58,6 +60,7 @@ export default function Header() {
               href="#"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="social Link"
             >
               <Image
                 src="/icons/social-icons/twitter-icon.svg"
@@ -81,6 +84,7 @@ export default function Header() {
               href="#"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="search-"
             >
               <Image
                 aria-hidden
@@ -94,6 +98,7 @@ export default function Header() {
               <button
                 onClick={() => setIsCartOpen(!isCartOpen)}
                 className="flex items-center gap-2 hover:underline hover:underline-offset-4"
+                aria-label="cartBtn"
               >
                 <Image
                   aria-hidden

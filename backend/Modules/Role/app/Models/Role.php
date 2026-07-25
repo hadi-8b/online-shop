@@ -4,6 +4,8 @@ namespace Modules\Role\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Modules\Admin\Models\Admin;
 use Modules\Permission\Models\Permission;
 use Modules\User\Models\User;
 
@@ -23,7 +25,12 @@ class Role extends Model
         'is_active'
     ];
 
-    public function permissions()
+    public function admins(): BelongsToMany
+    {
+        return $this->belongsToMany(Admin::class);
+    }
+
+    public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class);
     }

@@ -10,31 +10,15 @@ class StoreAdminRequest extends FormRequest
 {
     public function authorize()
     {
-            // بررسی اینکه کاربر لاگین است
-            if (!auth()->guard('admin')->check()) {
-                return false;
-            }
-    
-            $user = auth()->guard('admin')->user();
-    
-            // بررسی super admin بودن
-            if ($user->is_super_admin) {
-                return true;
-            }
-    
-            // بررسی مجوز از طریق Gate
-            if (Gate::allows(ability: 'create-admin')) {
-                return true;
-            }
-    
-            // بررسی سایر شرایط خاص
-            // مثلاً محدودیت تعداد ادمین‌ها
-            $adminsCount = Admin::count();
-        if ($adminsCount >= config('admin.max_admins')) {
+        // Only logged-in admins with permission or super-admin may create
+        $user = auth()->user();
+        if (! $user) {
             return false;
         }
-    
-            return false;
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+        return Gate::allows('create-admin');
     }
 
     public function rules()
@@ -42,11 +26,11 @@ class StoreAdminRequest extends FormRequest
         return [
             'first_name' => 'nullable|string|max:255',
             'last_name' => 'nullable|string|max:255',
-            'mobile' => 'required|string|unique:admins,mobile',
+            'phone' => 'required|string|unique:admins,phone',
             'email' => 'nullable|email|unique:admins,email',
             'address' => 'nullable|string',
-            'profile_picture' => 'nullable|image|max:2048', // 2MB Max
-            'password' => 'required|string|min:6',
+            'profile_picture' => 'nullable|image|max:2048',
+            'password' => ['required', 'string', 'min:8'],
             'is_super_admin' => 'boolean',
         ];
     }

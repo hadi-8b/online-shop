@@ -20,7 +20,6 @@ class UserController extends Controller
             'status' => true,
             'data' => new UserProfileResource(Auth::user())
         ]);
-        \Log::info('Auth user:', ['id' => auth()->id()]);
     }
 
     public function show(User $user): JsonResponse
@@ -53,7 +52,6 @@ class UserController extends Controller
         } catch (\Exception $e) {
             return $this->errorResponse($e->getMessage());
         }
-        \Log::info('Update data:', $data);
 
     }
 

@@ -6,15 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('admins', function (Blueprint $table) {
             $table->id();
+            // Multi-tenant
+            $table->unsignedBigInteger('tenant_id')->nullable()->index();
+            // Personal info
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
+            // PHONE (consistent)
             $table->string('phone')->unique();
             $table->string('email')->unique()->nullable();
             $table->string('address')->nullable();
@@ -28,9 +29,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('admins');

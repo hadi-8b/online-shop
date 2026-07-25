@@ -23,6 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa" dir="rtl">
+      <title>best shop</title>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ClientProviders>
           <Header />
@@ -30,6 +31,7 @@ export default function RootLayout({
           <Footer />
         </ClientProviders>
       </body>
+      <meta name="description" content="Put your description here."></meta>
     </html>
   );
 }

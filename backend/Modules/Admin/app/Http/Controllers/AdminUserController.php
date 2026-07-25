@@ -13,21 +13,22 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminUserController extends Controller
 {
+    protected function disk(): string
+    {
+        return config('filesystems.admin_disk', 's3');
+    }
+
     public function index(): JsonResponse
     {
         try {
             $users = User::paginate(15);
-            
             return response()->json([
                 'status' => true,
                 'message' => 'Users retrieved successfully',
                 'data' => AdminUserResource::collection($users)
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -37,7 +38,7 @@ class AdminUserController extends Controller
             $userData = [
                 'first_name' => $request->first_name,
                 'last_name' => $request->last_name,
-                'mobile' => $request->mobile,
+                'phone' => $request->phone,
                 'email' => $request->email,
                 'address' => $request->address,
                 'card_number' => $request->card_number,
@@ -45,24 +46,15 @@ class AdminUserController extends Controller
                 'password' => $request->password ? Hash::make($request->password) : null,
             ];
 
-            // Handle profile picture upload
             if ($request->hasFile('profile_picture')) {
-                $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+                $path = $request->file('profile_picture')->store('tenants/' . ($request->user()->tenant_id ?? 'global') . '/profile_pictures', $this->disk());
                 $userData['profile_picture'] = $path;
             }
 
             $user = User::create($userData);
-
-            return response()->json([
-                'status' => true,
-                'message' => 'User created successfully',
-                'data' => new AdminUserResource($user)
-            ], 201);
+            return response()->json(['status' => true, 'message' => 'User created successfully', 'data' => new AdminUserResource($user)], 201);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -70,45 +62,24 @@ class AdminUserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
-            
-            $userData = $request->only([
-                'first_name',
-                'last_name',
-                'mobile',
-                'email',
-                'address',
-                'card_number',
-                'is_admin'
-            ]);
+            $userData = $request->only(['first_name', 'last_name', 'phone', 'email', 'address', 'card_number', 'is_admin']);
 
-            // Handle password update
             if ($request->filled('password')) {
                 $userData['password'] = Hash::make($request->password);
             }
 
-            // Handle profile picture update
             if ($request->hasFile('profile_picture')) {
-                // Delete old profile picture if exists
                 if ($user->profile_picture) {
-                    Storage::disk('public')->delete($user->profile_picture);
+                    Storage::disk($this->disk())->delete($user->profile_picture);
                 }
-                
-                $path = $request->file('profile_picture')->store('profile_pictures', 'public');
+                $path = $request->file('profile_picture')->store('tenants/' . ($request->user()->tenant_id ?? 'global') . '/profile_pictures', $this->disk());
                 $userData['profile_picture'] = $path;
             }
 
             $user->update($userData);
-
-            return response()->json([
-                'status' => true,
-                'message' => 'User updated successfully',
-                'data' => new AdminUserResource($user)
-            ]);
+            return response()->json(['status' => true, 'message' => 'User updated successfully', 'data' => new AdminUserResource($user)]);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 
@@ -116,23 +87,13 @@ class AdminUserController extends Controller
     {
         try {
             $user = User::findOrFail($id);
-            
-            // Delete profile picture if exists
             if ($user->profile_picture) {
-                Storage::disk('public')->delete($user->profile_picture);
+                Storage::disk($this->disk())->delete($user->profile_picture);
             }
-            
             $user->delete();
-
-            return response()->json([
-                'status' => true,
-                'message' => 'User deleted successfully'
-            ]);
+            return response()->json(['status' => true, 'message' => 'User deleted successfully']);
         } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => $e->getMessage()
-            ], 500);
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
 }
