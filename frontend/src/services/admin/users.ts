@@ -1,57 +1,46 @@
-// src/services/admin/users.ts
-import { fetcher, sendToApi } from '@/services/api/api';
-import { 
-    UserInterface, 
-    CreateUserFormValuesInterface, 
-    UpdateUserFormValuesInterface 
+import { apiClient, ApiResponse } from '@/services/api/client';
+
+import {
+  UserInterface,
+  CreateUserFormValuesInterface,
+  UpdateUserFormValuesInterface,
 } from '@/contracts/admin/users';
 
 export const adminUserServices = {
-    getAll: async (): Promise<UserInterface[]> => {
-        const response = await fetcher({ 
-            url: 'admin/users'
-        });
-        const data = await response.json();
-        return data;
-    },
+  async getAll(): Promise<ApiResponse<UserInterface[]>> {
+    return apiClient.get<UserInterface[]>('/api/v1/admin/users');
+  },
 
-    getById: async (id: number): Promise<UserInterface> => {
-        const response = await fetcher({ 
-            url: `admin/users/${id}`
-        });
-        const data = await response.json();
-        return data;
-    },
+  async getById(id: number): Promise<ApiResponse<UserInterface>> {
+    return apiClient.get<UserInterface>(
+      `/api/v1/admin/users/${id}`
+    );
+  },
 
-    create: async (userData: CreateUserFormValuesInterface): Promise<UserInterface> => {
-        const response = await sendToApi({
-            url: 'admin/users',
-            options: {
-                body: JSON.stringify(userData)
-            }
-        });
-        const data = await response.json();
-        return data.user;
-    },
+  async create(
+    userData: CreateUserFormValuesInterface
+  ): Promise<ApiResponse<UserInterface>> {
+    return apiClient.post<UserInterface>(
+      '/api/v1/admin/users',
+      userData
+    );
+  },
 
-    update: async (id: number, userData: UpdateUserFormValuesInterface): Promise<UserInterface> => {
-        const response = await sendToApi({
-            url: `admin/users/${id}`,
-            options: {
-                method: 'PUT',
-                body: JSON.stringify(userData)
-            }
-        });
-        const data = await response.json();
-        return data.user;
-    },
+  async update(
+    id: number,
+    userData: UpdateUserFormValuesInterface
+  ): Promise<ApiResponse<UserInterface>> {
+    return apiClient.put<UserInterface>(
+      `/api/v1/admin/users/${id}`,
+      userData
+    );
+  },
 
-    delete: async (id: number): Promise<void> => {
-        await fetcher({
-            url: `admin/users/${id}`,
-            options: {
-                method: 'DELETE'
-            }
-        });
-    }
+  async delete(
+    id: number
+  ): Promise<ApiResponse<void>> {
+    return apiClient.delete<void>(
+      `/api/v1/admin/users/${id}`
+    );
+  },
 };

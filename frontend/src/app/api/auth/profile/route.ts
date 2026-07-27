@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
-import { proxyToBackend, runtime } from '@/server/bff';
+import { proxyToBackend } from '@/server/bff';
 
-export { runtime };
+export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
   return proxyToBackend(req, '/api/v1/profile', 'GET');
