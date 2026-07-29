@@ -30,6 +30,7 @@ class ApiClient {
         method,
         headers: requestHeaders,
         credentials: 'include', // کوکی HttpOnly
+        cache: 'no-store',
       };
 
       if (body && method !== 'GET') {

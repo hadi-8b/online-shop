@@ -1,4 +1,3 @@
-// src/components/common/form/input.tsx
 import { ErrorMessage, Field } from "formik";
 import { FC } from "react";
 
@@ -6,18 +5,22 @@ interface InputProps {
   name: string;
   label: string;
   type?: string;
+  placeholder?: string;
   inputClassName?: string;
   labelClassName?: string;
   errorClassName?: string;
+  disabled?: boolean;
 }
 
 const Input: FC<InputProps> = ({
   name,
   label,
   type = "text",
+  placeholder,
   inputClassName,
   labelClassName,
   errorClassName,
+  disabled,
 }) => {
   return (
     <>
@@ -31,6 +34,8 @@ const Input: FC<InputProps> = ({
         id={name}
         name={name}
         type={type}
+        placeholder={placeholder}
+        disabled={disabled}
         className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 sm:text-sm ${inputClassName ?? ""}`}
       />
       <ErrorMessage

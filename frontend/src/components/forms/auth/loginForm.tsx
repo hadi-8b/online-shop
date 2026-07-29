@@ -31,12 +31,12 @@ const LoginForm = withFormik<LoginFormProps, LoginFormValuesInterface>({
     try {
       setSubmitting(true);
       // گام ۱: گرفتن csrf cookie
-      await apiClient.get("/api/sanctum/csrf-cookie", false);
+      await apiClient.get("/api/sanctum/csrf-cookie");
 
       // گام ۲: ارسال login
-      const response = await apiClient.post("/api/auth/login", values, false);
+      const response = await apiClient.post("/api/auth/login", values);
 
-      if (response.success) {
+      if (response.status) {
         props.setPhone(values.phone);
         props.router.push("/auth/login/verify");
         console.log("Login response:", response);

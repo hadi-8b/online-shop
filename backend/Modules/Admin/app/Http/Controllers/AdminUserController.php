@@ -96,4 +96,21 @@ class AdminUserController extends Controller
             return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
     }
+    public function show($id): JsonResponse
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'User retrieved successfully',
+                'data' => new AdminUserResource($user),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage(),
+            ], 404);
+        }
+    }
 }
