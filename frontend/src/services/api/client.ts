@@ -1,9 +1,8 @@
-// src/services/api/client.ts
-export interface ApiResponse<T = any> {
-  data?: T;
+export interface ApiResponse<T = unknown> {
+  status: boolean;
   message?: string;
+  data?: T;
   errors?: Record<string, string[]>;
-  success: boolean;
 }
 
 export interface ApiRequestOptions {
@@ -35,9 +34,7 @@ class ApiClient {
 
       if (body && method !== 'GET') {
         if (body instanceof FormData) {
-          // وقتی فایل یا فرم داری → مستقیم بفرست
           requestOptions.body = body;
-          // ❌ Content-Type رو نذار، مرورگر خودش میذاره
         } else {
           // حالت معمول JSON
           requestHeaders['Content-Type'] = 'application/json';
@@ -55,10 +52,15 @@ class ApiClient {
         responseData = { message: await response.text() };
       }
 
-      return { ...responseData, success: response.ok };
+      return {
+        status: response.ok,
+        message: responseData.message,
+        data: responseData.data,
+        errors: responseData.errors,
+      };
     } catch (error: any) {
       return {
-        success: false,
+        status: false,
         message: error?.message || 'خطای شبکه',
         errors: { network: [error?.message || 'خطای شبکه'] },
       };
@@ -84,7 +86,6 @@ class ApiClient {
 
 export const apiClient = new ApiClient();
 
-// آماده برای استفاده
 export const authApi = {
   register: (payload: any) => apiClient.post('/api/auth/register', payload),
   login: (payload: any) => apiClient.post('/api/auth/login', payload),
