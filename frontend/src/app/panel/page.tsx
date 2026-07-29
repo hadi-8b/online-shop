@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useAuth from '@/hooks/useAuth';
-import { apiClient } from '@/services/api/client';
+import { authApi } from '@/services/api/client';
 
 // --- UI states ---
 const LoadingState = ({ onRetry }: { onRetry: () => void }) => (
@@ -46,14 +46,16 @@ export default function Panel() {
   }, [loading, user, router]);
 
   const handleLogout = async () => {
-    try {
-      await apiClient.post('/api/auth/logout', {}, true);
-      await mutate(() => null, false); // کش SWR خالی
-      router.replace('/auth/login');
-    } catch (e) {
-      console.error('Logout error:', e);
-    }
-  };
+  try {
+    await authApi.logout();
+    await mutate(); // دوباره profile؛ باید null شود
+    router.replace('/auth/login');
+  } catch (e) {
+    console.error('Logout error:', e);
+    await mutate();
+    router.replace('/auth/login');
+  }
+};
 
   if (loading) {
     return <LoadingState onRetry={() => mutate()} />;

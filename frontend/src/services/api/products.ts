@@ -99,15 +99,19 @@ export const getProductsList = async (params: {
 
 // دریافت محصولات برای صفحه اصلی
 export const getHomeProducts = async () => {
+  const empty = {
+    oldest_products: { data: [] as Product[] },
+    newest_products: { data: [] as Product[] },
+  };
+
   try {
-    const data = await apiRequest('products?per_page=8', {
-      next: { revalidate: 1800 }, // کش برای 30 دقیقه
+    const data = await apiRequest("products?per_page=8", {
+      next: { revalidate: 1800 },
     });
-    
-    return data;
+    return data ?? empty;
   } catch (error) {
     console.error("Error fetching home products:", error);
-    return { data: [] };
+    return empty;
   }
 };
 

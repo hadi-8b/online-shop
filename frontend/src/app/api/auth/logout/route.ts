@@ -4,5 +4,5 @@ import { proxyToBackend } from '@/server/bff';
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  return proxyToBackend(req, '/api/auth/logout', 'POST', false);
+  return proxyToBackend(req, '/api/logout', 'POST', false);
 }

@@ -1,12 +1,11 @@
-// src/store/auth/authSlice.ts
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import User, { UserType } from '@/models/user';
-import type { RootState } from '@/store';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
+import type { UserType } from "@/models/user";
+import type { RootState } from "@/store";
 
 export interface AuthState {
   loading?: boolean;
-  user: UserType | User | null;
+  user: UserType | null;
   phone?: string;
 }
 
@@ -17,11 +16,11 @@ const initialState: AuthState = {
 };
 
 export const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     updateUser: (state, action: PayloadAction<UserType | null>) => {
-      state.user = action.payload ? new User(action.payload) : null;
+      state.user = action.payload;
     },
     updateLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload;
@@ -36,14 +35,10 @@ export const authSlice = createSlice({
   },
 });
 
-export const {
-  updateUser,
-  updateLoading,
-  updatePhone,
-  clearAuth,
-} = authSlice.actions;
+export const { updateUser, updateLoading, updatePhone, clearAuth } =
+  authSlice.actions;
 
-export const selectUser = (state: RootState) => (state.auth.user ? new User(state.auth.user) : null);
+export const selectUser = (state: RootState) => state.auth.user;
 export const selectUserLoading = (state: RootState) => state.auth.loading;
 export const selectPhone = (state: RootState) => state.auth.phone;
 

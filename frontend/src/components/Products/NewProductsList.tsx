@@ -24,7 +24,7 @@ export default function NewProductsList({ productsData }: Props) {
           طراحی شیک و مدرن با جزئیات دقیق
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {newest_products.data.map((product) => (
+          {((newest_products?.data) ?? []).map((product) => (
             <ProductCard
               key={product.id}
               id={product.id}

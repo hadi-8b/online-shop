@@ -48,94 +48,95 @@ class CartService {
     try {
       const response = await apiClient.get<CartResponse>(
         this.CART_ENDPOINT,
-        false,
         this.getHeaders()
       );
 
-      if (response.success && response.data) {
+      if (response.status && response.data) {
         return {
           ...response,
           data: {
             items: response.data.items || [],
             total: response.data.total || 0,
-            count: response.data.items?.reduce((sum, item) => sum + item.quantity, 0) || 0
-          }
+            count:
+              response.data.items?.reduce((sum, item) => sum + item.quantity, 0) ||
+              0,
+          },
         };
       }
 
       return response;
     } catch (error) {
-      console.error('CartService.getCart error:', error);
+      console.error("CartService.getCart error:", error);
       throw error;
     }
   }
 
-  async addToCart(productId: number, quantity: number = 1): Promise<ApiResponse<CartUpdateResponse>> {
+  async addToCart(
+    productId: number,
+    quantity: number = 1
+  ): Promise<ApiResponse<CartUpdateResponse>> {
     if (quantity < 1) {
       return {
-        success: false,
-        message: 'تعداد محصول باید حداقل 1 باشد'
+        status: false,
+        message: "تعداد محصول باید حداقل 1 باشد",
       };
     }
     try {
-      const response = await apiClient.post<CartUpdateResponse>(
+      return await apiClient.post<CartUpdateResponse>(
         this.CART_ENDPOINT,
         { product_id: productId, quantity },
-        false,
         this.getHeaders()
       );
-      return response;
     } catch (error) {
-      console.error('CartService.addToCart error:', error);
+      console.error("CartService.addToCart error:", error);
       throw error;
     }
   }
 
-  async updateCartItem(itemId: number, quantity: number): Promise<ApiResponse<CartUpdateResponse>> {
+  async updateCartItem(
+    itemId: number,
+    quantity: number
+  ): Promise<ApiResponse<CartUpdateResponse>> {
     if (quantity < 0) {
       return {
-        success: false,
-        message: 'تعداد محصول نمی‌تواند منفی باشد'
+        status: false,
+        message: "تعداد محصول نمی‌تواند منفی باشد",
       };
     }
     try {
-      const response = await apiClient.put<CartUpdateResponse>(
+      return await apiClient.put<CartUpdateResponse>(
         `${this.CART_ENDPOINT}/${itemId}`,
         { quantity },
-        false,
         this.getHeaders()
       );
-      return response;
     } catch (error) {
-      console.error('CartService.updateCartItem error:', error);
+      console.error("CartService.updateCartItem error:", error);
       throw error;
     }
   }
 
-  async removeFromCart(itemId: number): Promise<ApiResponse<CartUpdateResponse>> {
+  async removeFromCart(
+    itemId: number
+  ): Promise<ApiResponse<CartUpdateResponse>> {
     try {
-      const response = await apiClient.delete<CartUpdateResponse>(
+      return await apiClient.delete<CartUpdateResponse>(
         `${this.CART_ENDPOINT}/${itemId}`,
-        false,
         this.getHeaders()
       );
-      return response;
     } catch (error) {
-      console.error('CartService.removeFromCart error:', error);
+      console.error("CartService.removeFromCart error:", error);
       throw error;
     }
   }
 
   async clearCart(): Promise<ApiResponse<CartUpdateResponse>> {
     try {
-      const response = await apiClient.delete<CartUpdateResponse>(
+      return await apiClient.delete<CartUpdateResponse>(
         `${this.CART_ENDPOINT}/clear`,
-        false,
         this.getHeaders()
       );
-      return response;
     } catch (error) {
-      console.error('CartService.clearCart error:', error);
+      console.error("CartService.clearCart error:", error);
       throw error;
     }
   }

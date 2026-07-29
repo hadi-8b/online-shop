@@ -30,7 +30,7 @@ export const fetchCart = createAsyncThunk(
   'cart/fetchCart',
   async () => {
     const response = await cartService.getCart();
-    if (!response.success) throw new Error(response.message || 'خطا در دریافت سبد خرید');
+    if (!response.status) throw new Error(response.message || 'خطا در دریافت سبد خرید');
     return response.data;
   }
 );
@@ -39,7 +39,7 @@ export const addToCartAsync = createAsyncThunk(
   'cart/addToCart',
   async ({ productId, quantity }: { productId: number; quantity: number }) => {
     const response = await cartService.addToCart(productId, quantity);
-    if (!response.success) throw new Error(response.message || 'خطا در افزودن به سبد خرید');
+    if (!response.status) throw new Error(response.message || 'خطا در افزودن به سبد خرید');
     return response.data;
   }
 );
@@ -48,7 +48,7 @@ export const updateCartItemAsync = createAsyncThunk(
   'cart/updateItem',
   async ({ itemId, quantity }: { itemId: number; quantity: number }) => {
     const response = await cartService.updateCartItem(itemId, quantity);
-    if (!response.success) throw new Error(response.message || 'خطا در به‌روزرسانی سبد خرید');
+    if (!response.status) throw new Error(response.message || 'خطا در به‌روزرسانی سبد خرید');
     return response.data;
   }
 );
@@ -57,7 +57,7 @@ export const removeFromCartAsync = createAsyncThunk(
   'cart/removeItem',
   async (itemId: number) => {
     const response = await cartService.removeFromCart(itemId);
-    if (!response.success) throw new Error(response.message || 'خطا در حذف از سبد خرید');
+    if (!response.status) throw new Error(response.message || 'خطا در حذف از سبد خرید');
     return response.data;
   }
 );
@@ -66,7 +66,7 @@ export const clearCartAsync = createAsyncThunk(
   'cart/clearCart',
   async () => {
     const response = await cartService.clearCart();
-    if (!response.success) throw new Error(response.message || 'خطا در پاک کردن سبد خرید');
+    if (!response.status) throw new Error(response.message || 'خطا در پاک کردن سبد خرید');
     return response.data;
   }
 );

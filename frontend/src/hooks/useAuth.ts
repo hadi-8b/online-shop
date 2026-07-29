@@ -21,8 +21,8 @@ const useAuth = (): UseAuthReturn => {
     // همیشه تلاش کن پروفایل رو بگیری؛ اگر 401 شد یعنی لاگین نیست
     'user_profile',
     async () => {
-      const response = await apiClient.get<UserType>('/api/auth/profile', true);
-      if (response.success && response.data) {
+      const response = await apiClient.get<UserType>('/api/auth/profile');
+      if (response.status && response.data) {
         return response.data;
       }
       // اگر 401 یا هر خطای دیگری بود، کاربر لاگین نیست

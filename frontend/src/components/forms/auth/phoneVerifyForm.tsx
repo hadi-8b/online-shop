@@ -37,15 +37,15 @@ const PhoneVerifyFormBase = withFormik<
         setSubmitting(true);
         try {
             // گرفتن csrf cookie
-            await apiClient.get("/api/sanctum/csrf-cookie", false);
+            await apiClient.get("/api/sanctum/csrf-cookie");
 
             // ارسال verify
             const response = await apiClient.post("/api/auth/verify", {
                 code: values.code,
                 phone: values.phone,
-            }, false);
+            });
 
-            if (response.success) {
+            if (response.status) {
                 props.clearPhone();
                 // پروفایل رو به‌روز کنه
                 await props.userMutate();

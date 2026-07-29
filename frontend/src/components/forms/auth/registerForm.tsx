@@ -45,11 +45,11 @@ const RegisterForm = withFormik<RegisterFormProps, RegisterFormValuesInterface>(
       
       console.log("Submitting registration form with values:", values);
       
-      const response = await apiClient.post('/api/auth/register', values, false);
+      const response = await apiClient.post('/api/auth/register', values);
       
       console.log("Registration API response:", response);
       
-      if (response.success) {
+      if (response.status) {
         setStatus({ 
           type: 'success', 
           message: 'ثبت‌نام با موفقیت انجام شد. در حال انتقال به صفحه ورود...' 
