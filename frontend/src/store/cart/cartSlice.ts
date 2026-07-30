@@ -115,7 +115,10 @@ export const cartSlice = createSlice({
 
     builder
       .addCase(fetchCart.pending, (state) => {
-        state.loading = true;
+        // فقط وقتی سبد خالی است UI را loading کن
+        if (state.items.length === 0) {
+          state.loading = true;
+        }
         state.error = null;
       })
       .addCase(fetchCart.fulfilled, setCart)

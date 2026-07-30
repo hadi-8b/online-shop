@@ -6,6 +6,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/hooks/useCart';
 import { getProductImage } from '../Products/GetProductImage';
+import { useCheckout } from '@/hooks/useCheckout';
+
 
 const Cart = () => {
   const {
@@ -17,6 +19,8 @@ const Cart = () => {
     removeFromCart,
     refreshCart
   } = useCart();
+
+  const { goToCheckout, authLoading } = useCheckout();
 
   const shipping = 30000; // هزینه ارسال ثابت
   const [isLoading, setIsLoading] = useState(true);
@@ -55,17 +59,17 @@ const Cart = () => {
     await removeFromCart(itemId);
   };
 
-  // نمایش وضعیت بارگذاری
-  if (loading || isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">در حال بارگذاری سبد خرید...</p>
-        </div>
+  // اسپینر تمام‌صفحه فقط وقتی هنوز آیتمی نداریم
+if ((loading || isLoading) && items.length === 0) {
+  return (
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+        <p className="text-gray-600">در حال بارگذاری سبد خرید...</p>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // نمایش سبد خرید خالی
   if (!items || items.length === 0) {
@@ -236,15 +240,17 @@ const Cart = () => {
                     </div>
                   </div>
                 </div>
-                <Link
-                  href="/checkout"
-                  className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors text-center font-medium flex items-center justify-center"
+                <button
+                  type="button"
+                  onClick={goToCheckout}
+                  disabled={count === 0 || authLoading}
+                  className="mt-6 w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors text-center font-medium flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  تکمیل خرید
-                </Link>
+                  ثبت سفارش
+                </button>
               </div>
             </div>
           </div>
