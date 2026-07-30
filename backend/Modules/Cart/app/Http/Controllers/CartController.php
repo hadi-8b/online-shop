@@ -44,34 +44,33 @@ class CartController extends Controller
      * Add item to cart
      */
     public function add(AddToCartRequest $request): JsonResponse
-{
-    try {
-        $validated = $request->validated();
-        
-        // اطمینان از integer بودن quantity
-        $quantity = (int) $validated['quantity'];
-        $productId = (int) $validated['product_id'];
-        
-        $user = Auth::user();
-        $guestId = $request->header('X-Guest-ID');
-        
-        $product = Product::findOrFail($productId);
-        
-        $result = $this->cartService->addToCart(
-            $product,
-            $quantity,
-            $user,
-            $guestId
-        );
+    {
+        try {
+            $validated = $request->validated();
 
-        return response()->json($result, Response::HTTP_OK);
+            // اطمینان از integer بودن quantity
+            $quantity = (int) $validated['quantity'];
+            $productId = (int) $validated['product_id'];
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => $e->getMessage()
-        ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            $user = Auth::user();
+            $guestId = $request->header('X-Guest-ID');
+
+            $product = Product::findOrFail($productId);
+
+            $result = $this->cartService->addToCart(
+                $product,
+                $quantity,
+                $user,
+                $guestId
+            );
+
+            return response()->json($result, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
     }
-}
 
     /**
      * Remove item from cart
@@ -82,21 +81,26 @@ class CartController extends Controller
             $user = Auth::user();
             $guestId = request()->header('X-Guest-ID');
 
-            $cartItem = CartItem::query()
-                ->when($user, fn($q) => $q->where('user_id', $user->id))
-                ->when($guestId, fn($q) => $q->where('guest_id', $guestId))
-                ->where('id', $id)
-                ->firstOrFail();
+            $query = CartItem::query()->where('id', $id);
 
-            $this->cartService->removeItem($cartItem, $user, $guestId);
+            if ($user) {
+                $query->where('user_id', $user->id);
+            } elseif ($guestId) {
+                $query->where('guest_id', $guestId);
+            } else {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+
+            $cartItem = $query->firstOrFail();
+
+            $this->cartService->removeItem($cartItem, $user, $user ? null : $guestId);
 
             return response()->json([
-                'message' => 'Cart item removed successfully'
+                'message' => 'Cart item removed successfully',
             ], Response::HTTP_OK);
-
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], Response::HTTP_NOT_FOUND);
         }
     }
@@ -111,27 +115,32 @@ class CartController extends Controller
             $guestId = $request->header('X-Guest-ID');
             $validated = $request->validated();
 
-            $cartItem = CartItem::query()
-                ->when($user, fn($q) => $q->where('user_id', $user->id))
-                ->when($guestId, fn($q) => $q->where('guest_id', $guestId))
-                ->where('id', $id)
-                ->firstOrFail();
+            $query = CartItem::query()->where('id', $id);
+
+            if ($user) {
+                $query->where('user_id', $user->id);
+            } elseif ($guestId) {
+                $query->where('guest_id', $guestId);
+            } else {
+                return response()->json(['message' => 'Unauthorized'], 401);
+            }
+
+            $cartItem = $query->firstOrFail();
 
             $updatedItem = $this->cartService->updateQuantity(
                 $cartItem,
-                $validated['quantity'],
+                (int) $validated['quantity'],
                 $user,
-                $guestId
+                $user ? null : $guestId
             );
 
             return response()->json([
                 'message' => 'Cart item updated successfully',
-                'cart_item' => $updatedItem
+                'cart_item' => $updatedItem,
             ], Response::HTTP_OK);
-
         } catch (\Exception $e) {
             return response()->json([
-                'message' => $e->getMessage()
+                'message' => $e->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }

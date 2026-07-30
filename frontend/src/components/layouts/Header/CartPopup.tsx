@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/hooks/useCart";
 import { getProductImage } from "@/components/Products/GetProductImage";
+import { useCheckout } from "@/hooks/useCheckout";
 
 interface CartPopupProps {
   isOpen: boolean;
@@ -14,13 +15,13 @@ interface CartPopupProps {
 }
 
 export const CartPopup = memo(({ isOpen, onClose }: CartPopupProps) => {
-  const { 
-    items, 
-    total, 
+  const {
+    items,
+    total,
     count,
-    loading, 
-    removeFromCart, 
-    refreshCart 
+    loading,
+    removeFromCart,
+    refreshCart
   } = useCart();
 
   // بارگذاری مجدد سبد خرید هنگام باز شدن پاپ‌آپ
@@ -34,8 +35,15 @@ export const CartPopup = memo(({ isOpen, onClose }: CartPopupProps) => {
     await removeFromCart(itemId);
   };
 
+  const { goToCheckout, authLoading } = useCheckout();
+
   const handleClose = () => {
     onClose();
+  };
+
+  const handleCheckout = () => {
+    handleClose();
+    goToCheckout();
   };
 
   return (
@@ -80,7 +88,7 @@ export const CartPopup = memo(({ isOpen, onClose }: CartPopupProps) => {
                   </button>
                 </div>
 
-                {loading ? (
+                {loading && items.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-2"></div>
                     <p className="text-sm text-gray-300">در حال بارگذاری...</p>
@@ -118,7 +126,7 @@ export const CartPopup = memo(({ isOpen, onClose }: CartPopupProps) => {
                             sizes="48px"
                           />
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           <h4 className="text-sm font-medium text-white truncate">
                             {item.product?.title || "محصول"}
@@ -132,7 +140,7 @@ export const CartPopup = memo(({ isOpen, onClose }: CartPopupProps) => {
                             </span>
                           </div>
                         </div>
-                        
+
                         <button
                           onClick={() => handleRemoveItem(item.id)}
                           className="text-gray-400 hover:text-red-400 transition-colors p-1"
@@ -165,18 +173,19 @@ export const CartPopup = memo(({ isOpen, onClose }: CartPopupProps) => {
                       >
                         مشاهده سبد خرید
                       </Link>
-                      <Link
-                        href="/checkout"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-center font-medium transition-colors"
-                        onClick={handleClose}
+                      <button
+                        type="button"
+                        onClick={handleCheckout}
+                        disabled={count === 0 || loading || authLoading}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-center font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="flex items-center justify-center">
                           <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                           </svg>
-                          تکمیل خرید
+                          ثبت سفارش
                         </span>
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 )}

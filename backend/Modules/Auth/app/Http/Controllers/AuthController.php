@@ -10,6 +10,7 @@ use Modules\Auth\Http\Requests\LoginRequest;
 use Modules\Auth\Http\Requests\VerifyCodeRequest;
 use Modules\Auth\Services\AuthService;
 use Modules\Auth\Transformers\UserResource;
+use Modules\Cart\Services\CartService;
 
 class AuthController extends Controller
 {
@@ -44,14 +45,21 @@ class AuthController extends Controller
     {
         $result = $this->authService->verify($request->phone, $request->code);
 
+        $guestId = $request->header('X-Guest-ID');
+        if ($guestId) {
+            app(CartService::class)->transferGuestCartToUser(
+                $guestId,
+                $result['user']
+            );
+        }
+
         return response()->json([
             'message' => 'Verified successfully',
             'data' => [
                 'user' => new UserResource($result['user']),
-            ]
+            ],
         ]);
     }
-
     public function resendCode(Request $request)
     {
         $result = $this->authService->resendCode($request->phone);

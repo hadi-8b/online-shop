@@ -15,7 +15,7 @@ class CartService
     public function getCart(?User $user, ?string $guestId = null): array
     {
         $query = CartItem::query()
-            ->with(['product:id,title,price,stock','product.images']);
+            ->with(['product:id,title,price,stock', 'product.images']);
 
         if ($user) {
             $query->where('user_id', $user->id);
@@ -104,9 +104,15 @@ class CartService
         ?User $user = null,
         ?string $guestId = null
     ): CartItem {
-        if (($user && $cartItem->user_id !== $user->id) ||
-            ($guestId && $cartItem->guest_id !== $guestId)
-        ) {
+        if ($user) {
+            if ($cartItem->user_id !== $user->id) {
+                throw new \Exception('Unauthorized access to cart item');
+            }
+        } elseif ($guestId) {
+            if ($cartItem->guest_id !== $guestId) {
+                throw new \Exception('Unauthorized access to cart item');
+            }
+        } else {
             throw new \Exception('Unauthorized access to cart item');
         }
 
@@ -127,9 +133,15 @@ class CartService
         ?User $user = null,
         ?string $guestId = null
     ): void {
-        if (($user && $cartItem->user_id !== $user->id) ||
-            ($guestId && $cartItem->guest_id !== $guestId)
-        ) {
+        if ($user) {
+            if ($cartItem->user_id !== $user->id) {
+                throw new \Exception('Unauthorized access to cart item');
+            }
+        } elseif ($guestId) {
+            if ($cartItem->guest_id !== $guestId) {
+                throw new \Exception('Unauthorized access to cart item');
+            }
+        } else {
             throw new \Exception('Unauthorized access to cart item');
         }
 

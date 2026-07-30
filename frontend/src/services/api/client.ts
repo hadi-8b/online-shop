@@ -90,7 +90,14 @@ export const apiClient = new ApiClient();
 export const authApi = {
   register: (payload: any) => apiClient.post('/api/auth/register', payload),
   login: (payload: any) => apiClient.post('/api/auth/login', payload),
-  verify: (payload: any) => apiClient.post('/api/auth/verify', payload),
+  verify: (payload: { phone: string; code: string }) => {
+    const headers: Record<string, string> = {};
+    if (typeof window !== 'undefined') {
+      const guestId = localStorage.getItem('guest_id');
+      if (guestId) headers['X-Guest-ID'] = guestId;
+    }
+    return apiClient.post('/api/auth/verify', payload, headers);
+  },
   logout: () => apiClient.post('/api/auth/logout'),
   profile: () => apiClient.get('/api/auth/profile'),
 };
