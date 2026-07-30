@@ -20,6 +20,11 @@ export async function proxyToBackend(
     Cookie: req.headers.get('cookie') || '',
   };
 
+  const guestId = req.headers.get('x-guest-id');
+  if (guestId) {
+    headers['X-Guest-ID'] = guestId;
+  }
+
   if (hasBody && req.headers.get('content-type')) {
     headers['Content-Type'] = req.headers.get('content-type')!;
   }
