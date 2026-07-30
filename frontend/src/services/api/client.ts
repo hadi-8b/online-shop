@@ -56,7 +56,7 @@ class ApiClient {
       return {
         status: response.ok,
         message: responseData.message,
-        data: responseData.data,
+        data: responseData.data !== undefined ? responseData.data : responseData,
         errors: responseData.errors,
       };
     } catch (error: any) {
