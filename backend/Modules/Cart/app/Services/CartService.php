@@ -58,6 +58,7 @@ class CartService
             throw new \Exception('Insufficient stock available');
         }
 
+        /** @var CartItem|null $cartItem */
         $cartItem = CartItem::where([
             'user_id' => $user?->id,
             'guest_id' => $guestId,
