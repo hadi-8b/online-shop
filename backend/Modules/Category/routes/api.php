@@ -14,6 +14,9 @@ use Modules\Category\Http\Controllers\CategoryController;
  *
 */
 
+
+Route::get('categories', [CategoryController::class, 'list']);
+
 // Route::middleware(middleware: 'auth:sanctum')->group(function () {
    
 // });

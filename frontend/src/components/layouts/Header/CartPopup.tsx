@@ -5,6 +5,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useEffect, memo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { XMarkIcon, TrashIcon, ShoppingBagIcon } from "@heroicons/react/24/outline";
 import { useCart } from "@/hooks/useCart";
 import { getProductImage } from "@/components/Products/GetProductImage";
 import { useCheckout } from "@/hooks/useCheckout";
@@ -15,31 +16,14 @@ interface CartPopupProps {
 }
 
 export const CartPopup = memo(({ isOpen, onClose }: CartPopupProps) => {
-  const {
-    items,
-    total,
-    count,
-    loading,
-    removeFromCart,
-    refreshCart
-  } = useCart();
-
-  // بارگذاری مجدد سبد خرید هنگام باز شدن پاپ‌آپ
-  useEffect(() => {
-    if (isOpen) {
-      refreshCart();
-    }
-  }, [isOpen, refreshCart]);
-
-  const handleRemoveItem = async (itemId: number) => {
-    await removeFromCart(itemId);
-  };
-
+  const { items, total, count, loading, removeFromCart, refreshCart } = useCart();
   const { goToCheckout, authLoading } = useCheckout();
 
-  const handleClose = () => {
-    onClose();
-  };
+  useEffect(() => {
+    if (isOpen) refreshCart();
+  }, [isOpen, refreshCart]);
+
+  const handleClose = () => onClose();
 
   const handleCheckout = () => {
     handleClose();
@@ -51,142 +35,140 @@ export const CartPopup = memo(({ isOpen, onClose }: CartPopupProps) => {
       <Dialog as="div" className="relative z-50" onClose={handleClose}>
         <Transition.Child
           as={Fragment}
-          enter="ease-out duration-300"
+          enter="ease-out duration-200"
           enterFrom="opacity-0"
           enterTo="opacity-100"
-          leave="ease-in duration-200"
+          leave="ease-in duration-150"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-[1px]" aria-hidden="true" />
         </Transition.Child>
 
-        <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-start justify-end p-4">
+        <div className="fixed inset-0 overflow-hidden">
+          <div className="absolute inset-0 flex justify-end">
             <Transition.Child
               as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-x-2"
-              enterTo="opacity-100 translate-x-0"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-x-0"
-              leaveTo="opacity-0 translate-x-2"
+              enter="transform transition ease-out duration-300"
+              enterFrom="translate-x-full"
+              enterTo="translate-x-0"
+              leave="transform transition ease-in duration-200"
+              leaveFrom="translate-x-0"
+              leaveTo="translate-x-full"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-lg bg-gray-900 text-white p-6 shadow-xl transition-all border border-gray-700">
-                <div className="flex items-center justify-between mb-4">
-                  <Dialog.Title className="text-lg font-semibold">
-                    سبد خرید ({count} محصول)
+              <Dialog.Panel className="flex h-full w-full max-w-md flex-col bg-white shadow-2xl">
+                {/* هدر */}
+                <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                  <Dialog.Title className="text-base font-bold text-gray-900">
+                    سبد خرید
+                    {count > 0 && (
+                      <span className="mr-2 text-sm font-medium text-gray-500">
+                        ({count.toLocaleString("fa-IR")} کالا)
+                      </span>
+                    )}
                   </Dialog.Title>
                   <button
+                    type="button"
                     onClick={handleClose}
-                    className="text-gray-400 hover:text-white transition-colors"
-                    aria-label="بستن سبد خرید"
+                    className="rounded-lg p-2 text-gray-400 hover:bg-gray-50 hover:text-gray-700"
+                    aria-label="بستن"
                   >
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    <XMarkIcon className="h-5 w-5" />
                   </button>
                 </div>
 
-                {loading && items.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-8">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mb-2"></div>
-                    <p className="text-sm text-gray-300">در حال بارگذاری...</p>
-                  </div>
-                ) : items.length === 0 ? (
-                  <div className="text-center py-8">
-                    <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                    <p className="text-gray-300 mb-4">سبد خرید شما خالی است</p>
-                    <Link
-                      href="/products"
-                      className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors"
-                      onClick={handleClose}
-                    >
-                      <svg className="w-4 h-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      شروع خرید
-                    </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
-                    {items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-3 p-3 bg-gray-800 rounded-lg border border-gray-700 hover:bg-gray-750 transition-colors"
-                      >
-                        <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
-                          <Image
-                            src={getProductImage(item.product?.images)}
-                            alt={item.product?.title || "محصول"}
-                            fill
-                            className="object-cover"
-                            sizes="48px"
-                          />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-white truncate">
-                            {item.product?.title || "محصول"}
-                          </h4>
-                          <div className="flex items-center justify-between mt-1">
-                            <span className="text-xs text-gray-300">
-                              تعداد: {item.quantity}
-                            </span>
-                            <span className="text-sm font-medium text-blue-400">
-                              {(Number(item.price) * item.quantity).toLocaleString('fa-IR')} تومان
-                            </span>
-                          </div>
-                        </div>
-
-                        <button
-                          onClick={() => handleRemoveItem(item.id)}
-                          className="text-gray-400 hover:text-red-400 transition-colors p-1"
-                          disabled={loading}
-                          aria-label={`حذف ${item.product?.title}`}
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+                {/* بدنه */}
+                <div className="flex-1 overflow-y-auto px-5 py-4">
+                  {loading && items.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                      <div className="mb-3 h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-yellow-500" />
+                      <p className="text-sm">در حال بارگذاری...</p>
+                    </div>
+                  ) : items.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-50">
+                        <ShoppingBagIcon className="h-8 w-8 text-gray-300" />
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <p className="mb-1 font-medium text-gray-800">سبد خرید خالی است</p>
+                      <p className="mb-6 text-sm text-gray-500">
+                        محصولات مورد علاقه را اضافه کنید
+                      </p>
+                      <Link
+                        href="/products"
+                        onClick={handleClose}
+                        className="rounded-xl bg-yellow-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-yellow-600"
+                      >
+                        مشاهده محصولات
+                      </Link>
+                    </div>
+                  ) : (
+                    <ul className="space-y-3">
+                      {items.map((item) => (
+                        <li
+                          key={item.id}
+                          className="flex gap-3 rounded-xl border border-gray-100 bg-gray-50/80 p-3"
+                        >
+                          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-white">
+                            <Image
+                              src={getProductImage(item.product?.images)}
+                              alt={item.product?.title || "محصول"}
+                              fill
+                              className="object-cover"
+                              sizes="64px"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate text-sm font-medium text-gray-900">
+                              {item.product?.title || "محصول"}
+                            </h4>
+                            <p className="mt-0.5 text-xs text-gray-500">
+                              {item.quantity.toLocaleString("fa-IR")} ×{" "}
+                              {Number(item.price).toLocaleString("fa-IR")} تومان
+                            </p>
+                            <p className="mt-1 text-sm font-semibold text-gray-900">
+                              {(Number(item.price) * item.quantity).toLocaleString("fa-IR")}{" "}
+                              تومان
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeFromCart(item.id)}
+                            disabled={loading}
+                            className="self-start rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                            aria-label="حذف"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
 
+                {/* فوتر */}
                 {items.length > 0 && (
-                  <div className="mt-6 pt-4 border-t border-gray-700">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-lg font-semibold">جمع کل:</span>
-                      <span className="text-lg font-bold text-blue-400">
-                        {total.toLocaleString('fa-IR')} تومان
+                  <div className="border-t border-gray-100 bg-white px-5 py-4 space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">جمع سبد</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        {total.toLocaleString("fa-IR")} تومان
                       </span>
                     </div>
-
-                    <div className="grid grid-cols-1 gap-3">
-                      <Link
-                        href="/cart"
-                        className="w-full bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg text-center font-medium transition-colors border border-gray-600"
-                        onClick={handleClose}
-                      >
-                        مشاهده سبد خرید
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={handleCheckout}
-                        disabled={count === 0 || loading || authLoading}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-center font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="flex items-center justify-center">
-                          <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                          </svg>
-                          ثبت سفارش
-                        </span>
-                      </button>
-                    </div>
+                    <Link
+                      href="/cart"
+                      onClick={handleClose}
+                      className="block w-full rounded-xl border border-gray-200 py-3 text-center text-sm font-medium text-gray-800 hover:bg-gray-50"
+                    >
+                      مشاهده سبد خرید
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={handleCheckout}
+                      disabled={count === 0 || loading || authLoading}
+                      className="w-full rounded-xl bg-yellow-500 py-3 text-sm font-semibold text-white hover:bg-yellow-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      ثبت سفارش
+                    </button>
                   </div>
                 )}
               </Dialog.Panel>
@@ -198,4 +180,4 @@ export const CartPopup = memo(({ isOpen, onClose }: CartPopupProps) => {
   );
 });
 
-CartPopup.displayName = 'CartPopup';
+CartPopup.displayName = "CartPopup";
