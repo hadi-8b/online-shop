@@ -15,6 +15,18 @@ class CategoryController extends Controller
         return response()->json($categories);
     }
 
+    public function list()
+    {
+        $categories = Category::query()
+            ->select('id', 'name', 'slug', 'parent_id')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'data' => $categories,
+        ]);
+    }
+    
     // ایجاد دسته‌بندی جدید
     public function store(Request $request)
     {

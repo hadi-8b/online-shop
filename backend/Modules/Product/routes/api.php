@@ -16,17 +16,20 @@ use Modules\Product\Http\Controllers\ProductController;
 
 
 Route::prefix('products')->group(function () {
-    Route::get('/', [ProductController::class, 'index']);
+    // ثابت‌ها اول — قبل از {id}
+    Route::get('/', [ProductController::class, 'index']);           // کاتالوگ + فیلتر
+    Route::get('/home', [ProductController::class, 'home']);       // صفحه اصلی
+    Route::get('/search', [ProductController::class, 'search']);   // اگر جدا می‌خواهید
+
+    // پارامتری آخر
     Route::get('/{id}', [ProductController::class, 'show']);
-    Route::get('/search', [ProductController::class, 'search']);
 });
 
-
 Route::middleware('auth:sanctum')->prefix('products')->group(function () {
-    Route::post('/', [ProductController::class, 'store']); // ایجاد محصول جدید
-    Route::put('/{id}', [ProductController::class, 'update']); // ویرایش محصول
-    Route::delete('/{id}', [ProductController::class, 'destroy']); // حذف محصول
-    Route::post('products/{product}/primary-image/{image}', [ProductController::class,'setPrimaryImage']);
+    Route::post('/', [ProductController::class, 'store']);
+    Route::put('/{id}', [ProductController::class, 'update']);
+    Route::delete('/{id}', [ProductController::class, 'destroy']);
+    Route::post('{product}/primary-image/{image}', [ProductController::class, 'setPrimaryImage']);
 });
 
 

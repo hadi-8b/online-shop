@@ -4,6 +4,7 @@ namespace Modules\Product\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Modules\Product\Models\Product;
 use Illuminate\Support\Facades\Storage;
 
@@ -12,20 +13,75 @@ class ProductController extends Controller
     /**
      * لیست محصولات
      */
-    public function index()
+    public function home()
     {
         $oldestProducts = Product::with(['category', 'images'])
+            ->where('is_active', true) // اگر ستون دارید؛ وگرنه حذف کنید
             ->orderBy('created_at', 'asc')
-            ->paginate(10);
+            ->paginate(8);
 
         $newestProducts = Product::with(['category', 'images'])
+            ->where('is_active', true)
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(8);
 
         return response()->json([
             'oldest_products' => $oldestProducts,
-            'newest_products' => $newestProducts
+            'newest_products' => $newestProducts,
         ], 200);
+    }
+
+    /**
+     * لیست کاتالوگ محصولات (با فیلتر)
+     * GET /api/products?search=&category=&min_price=&max_price=&sort=&page=&per_page=
+     */
+    public function index(Request $request)
+    {
+        $query = Product::with(['category', 'images']);
+
+        // اگر ستون is_active ندارید، این بلوک را حذف کنید
+        if (Schema::hasColumn('products', 'is_active')) {
+            $query->where('is_active', true);
+        }
+
+        if ($search = $request->query('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($category = $request->query('category')) {
+            $query->where('category_id', $category);
+        }
+
+        // سازگار با search قدیمی که category_id می‌فرستاد
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->query('category_id'));
+        }
+
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', (float) $request->query('min_price'));
+        }
+
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', (float) $request->query('max_price'));
+        }
+
+        $sort = $request->query('sort', 'newest');
+        match ($sort) {
+            'price_asc' => $query->orderBy('price', 'asc'),
+            'price_desc' => $query->orderBy('price', 'desc'),
+            'oldest' => $query->orderBy('created_at', 'asc'),
+            default => $query->orderBy('created_at', 'desc'),
+        };
+
+        $perPage = min(max((int) $request->query('per_page', 12), 1), 48);
+
+        return response()->json(
+            $query->paginate($perPage),
+            200
+        );
     }
 
     /**
@@ -47,7 +103,7 @@ class ProductController extends Controller
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $image) {
                 $path = $image->store('products', 'public');
-                
+
                 $product->images()->create([
                     'image_path' => $path,
                     'is_primary' => $index === 0
@@ -56,7 +112,7 @@ class ProductController extends Controller
         }
 
         return response()->json([
-            'message' => 'Product created successfully', 
+            'message' => 'Product created successfully',
             'product' => $product->load(['category', 'images'])
         ], 201);
     }
@@ -111,7 +167,7 @@ class ProductController extends Controller
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
                 $path = $image->store('products', 'public');
-                
+
                 $product->images()->create([
                     'image_path' => $path,
                     'is_primary' => $product->images()->count() === 0
@@ -180,10 +236,10 @@ class ProductController extends Controller
     public function setPrimaryImage(Request $request, $productId, $imageId)
     {
         $product = Product::findOrFail($productId);
-        
+
         // حذف وضعیت primary از همه تصاویر محصول
         $product->images()->update(['is_primary' => false]);
-        
+
         // تنظیم تصویر جدید به عنوان primary
         $product->images()->where('id', $imageId)->update(['is_primary' => true]);
 
